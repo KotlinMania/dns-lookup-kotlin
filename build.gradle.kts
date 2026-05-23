@@ -57,10 +57,18 @@ kotlin {
         binaries.framework { baseName = "DnsLookup"; xcf.add(this) }
     }
     iosSimulatorArm64 {
-        binaries.framework { baseName = "DnsLookup"; xcf.add(this) }
+        binaries.framework {
+            baseName = "DnsLookup"
+            isStatic = true
+            xcf.add(this)
+        }
     }
     iosX64 {
-        binaries.framework { baseName = "DnsLookup"; xcf.add(this) }
+        binaries.framework {
+            baseName = "DnsLookup"
+            isStatic = true
+            xcf.add(this)
+        }
     }
 
     tvosArm64 {
