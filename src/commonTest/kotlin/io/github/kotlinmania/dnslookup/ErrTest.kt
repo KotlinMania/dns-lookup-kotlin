@@ -1,4 +1,4 @@
-// port-lint: source src/err.rs
+// port-lint: source err.rs
 package io.github.kotlinmania.dnslookup
 
 import kotlin.test.Test

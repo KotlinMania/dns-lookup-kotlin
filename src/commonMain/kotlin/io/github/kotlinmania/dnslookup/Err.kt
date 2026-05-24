@@ -1,11 +1,11 @@
-// port-lint: source src/err.rs
+// port-lint: source err.rs
 package io.github.kotlinmania.dnslookup
 
 /**
  * Stores a lookup error from `getaddrinfo` or `getnameinfo`. The upstream
- * Rust type implements `From<LookupError> for io::Error`, which on this
- * Kotlin side is expressed by extending [Exception]: the embedded inner
- * exception's message and cause are surfaced through the standard
+ * Rust type converts into an IO error, which on this Kotlin side is
+ * expressed by extending [Exception]: the embedded inner exception's
+ * message and cause are surfaced through the standard
  * [Throwable] API.
  */
 class LookupError internal constructor(
@@ -39,7 +39,7 @@ class LookupError internal constructor(
          * Build a [LookupError] from an existing IO-shaped throwable. The
          * resulting error has [kind] of [LookupErrorKind.IO] and
          * [errorNum] of `0`. This is the Kotlin analogue of upstream's
-         * `From<io::Error> for LookupError` impl.
+         * IO-error conversion.
          */
         fun fromIoError(err: Throwable): LookupError = LookupError(
             kind = LookupErrorKind.IO,
@@ -62,7 +62,7 @@ enum class LookupErrorKind {
      */
     Again,
 
-    /** Invalid value for the `ai_flags` field. */
+    /** Invalid value for the address-information flags field. */
     Badflags,
 
     /**
@@ -85,13 +85,13 @@ enum class LookupErrorKind {
     /** Non-recoverable failure in name resolution. */
     Fail,
 
-    /** `ai_family` not supported. */
+    /** Address family not supported. */
     Family,
 
-    /** `ai_socktype` not supported. */
+    /** Socket type not supported. */
     Socktype,
 
-    /** SERVICE not supported for `ai_socktype`. */
+    /** SERVICE not supported for the socket type. */
     Service,
 
     /** Memory allocation failure. */
@@ -104,9 +104,9 @@ enum class LookupErrorKind {
      * An unknown result code was returned.
      *
      * For some platforms, you may wish to match on an unknown value
-     * directly. Note that `gai_strerror` is used to get error messages,
-     * so the generated IO error should contain the correct error message
-     * for the platform.
+     * directly. Note that platform address-info error text is used to
+     * build messages, so the generated IO error should contain the
+     * correct error message for the platform.
      */
     Unknown,
 
@@ -126,11 +126,9 @@ enum class LookupErrorKind {
          *
          * Platforms that lack a particular EAI symbol surface it as the
          * [ErrSys.EAI_ABSENT] sentinel — those branches then never match
-         * a real error code returned by the system. This is how the
-         * upstream `cfg(not(any(target_os = "freebsd", target_os =
-         * "emscripten")))` gate around `EAI_NODATA` (and the absent
-         * `EAI_SYSTEM` on Windows) is preserved without conditional
-         * compilation.
+         * a real error code returned by the system. This preserves the
+         * upstream platform gates around no-data and system-error symbols
+         * without conditional compilation.
          */
         fun fromGaiErr(err: Int): LookupErrorKind = when (err) {
             ErrSys.EAI_AGAIN -> Again
@@ -161,12 +159,12 @@ internal fun gaiErrToIoError(err: Int): Throwable = when (err) {
 /**
  * Platform-specific `gai` error code surface. Each target supplies the
  * numeric values from its libc or winsock headers, along with the local
- * equivalents of `gai_strerror` and `io::Error::last_os_error`.
+ * equivalents of platform address-info error text and the last OS error.
  *
  * Platforms that lack a particular symbol expose [EAI_ABSENT] in its
  * place — a sentinel chosen so that real error codes never collide with
- * it, preserving the upstream `cfg(...)` gates around `EAI_NODATA` and
- * `EAI_SYSTEM` without conditional compilation.
+ * it, preserving the upstream platform gates around no-data and
+ * system-error symbols without conditional compilation.
  */
 internal expect object ErrSys {
     val EAI_AGAIN: Int
@@ -188,11 +186,11 @@ internal expect object ErrSys {
      */
     val EAI_ABSENT: Int
 
-    /** Equivalent of libc / winsock `gai_strerror(err)`. */
+    /** Equivalent of libc / winsock address-info error text lookup. */
     fun gaiStrError(err: Int): String
 
     /**
-     * Equivalent of `io::Error::last_os_error()`. Wraps the platform's
+     * Equivalent of the platform's last OS error. Wraps the platform's
      * current `errno` / `WSAGetLastError` value, where one is available;
      * on Kotlin targets that do not expose an OS errno, this returns a
      * generic IO-shaped throwable.
