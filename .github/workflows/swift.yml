@@ -76,6 +76,14 @@ jobs:
       #     KotlinRuntimeSupport, ExportedKotlinPackages, KotlinRuntime.
       - name: Build Swift Export package
         env:
+          HOME: ${{ github.workspace }}/.swift-ci-home
+          JAVA_TOOL_OPTIONS: "-Duser.home=${{ github.workspace }}/.swift-ci-home -Djava.io.tmpdir=${{ github.workspace }}/.tmp-cache"
+          GRADLE_USER_HOME: ${{ github.workspace }}/.gradle
+          KONAN_DATA_DIR: ${{ github.workspace }}/.konan-cache
+          ANDROID_USER_HOME: ${{ github.workspace }}/.android-home
+          TMPDIR: ${{ github.workspace }}/.tmp-cache/
+          SWIFTPM_MODULECACHE_OVERRIDE: ${{ github.workspace }}/.swiftpm-module-cache
+          CLANG_MODULE_CACHE_PATH: ${{ github.workspace }}/.clang-module-cache
           BUILT_PRODUCTS_DIR: ${{ github.workspace }}/build/swift-test
           TARGET_BUILD_DIR: ${{ github.workspace }}/build/swift-test
           SDK_NAME: macosx
@@ -84,11 +92,21 @@ jobs:
           FRAMEWORKS_FOLDER_PATH: Frameworks
           MACOSX_DEPLOYMENT_TARGET: "14.0"
           DEPLOYMENT_TARGET_SETTING_NAME: MACOSX_DEPLOYMENT_TARGET
-        run: ./gradlew embedSwiftExportForXcode --no-configuration-cache
+        run: |
+          mkdir -p "$HOME" "$GRADLE_USER_HOME" "$KONAN_DATA_DIR" "$ANDROID_USER_HOME" "$TMPDIR" "$SWIFTPM_MODULECACHE_OVERRIDE" "$CLANG_MODULE_CACHE_PATH"
+          ./gradlew clean embedSwiftExportForXcode --rerun-tasks --no-build-cache --no-configuration-cache
 
       - name: Run swift test against Kotlin-exported module
+        env:
+          HOME: ${{ github.workspace }}/.swift-ci-home
+          KONAN_DATA_DIR: ${{ github.workspace }}/.konan-cache
+          TMPDIR: ${{ github.workspace }}/.tmp-cache/
+          SWIFTPM_MODULECACHE_OVERRIDE: ${{ github.workspace }}/.swiftpm-module-cache
+          CLANG_MODULE_CACHE_PATH: ${{ github.workspace }}/.clang-module-cache
         working-directory: swift-test-harness
-        run: swift test
+        run: |
+          mkdir -p "$HOME" "$KONAN_DATA_DIR" "$TMPDIR" "$SWIFTPM_MODULECACHE_OVERRIDE" "$CLANG_MODULE_CACHE_PATH"
+          swift test
 
       - name: Upload Swift Export artifacts
         if: success() || failure()

@@ -28,7 +28,7 @@ plugins {
 }
 
 group = "io.github.kotlinmania"
-version = "0.1.0"
+version = "0.1.1"
 
 val androidCommandLineToolsRevision = "14742923"
 val projectCompileSdk = "34"
@@ -181,8 +181,8 @@ fun installProjectAndroidSdk(execOperations: ExecOperations) {
 // The Android Gradle plugin resolves the SDK location while Gradle builds the
 // task graph, before any task executes, so the project-local Android SDK must
 // exist by the time configuration reaches the android target.
-val androidSdkExecOperations = serviceOf<ExecOperations>()
-installProjectAndroidSdk(androidSdkExecOperations)
+val projectExecOperations = serviceOf<ExecOperations>()
+installProjectAndroidSdk(projectExecOperations)
 
 kotlin {
     applyDefaultHierarchyTemplate()
@@ -529,7 +529,7 @@ tasks.register("setupAndroidSdk") {
     description = "Downloads and configures the project-local Android SDK."
     outputs.upToDateWhen { false }
     doLast {
-        installProjectAndroidSdk(androidSdkExecOperations)
+        installProjectAndroidSdk(projectExecOperations)
     }
 }
 
@@ -615,6 +615,103 @@ tasks.matching { it.name == "embedSwiftExportForXcode" }.configureEach {
         }
         hasXcodeEnvironment || swiftExportTaskDirectlyRequested
     }
+}
+
+val localSwiftHome = layout.projectDirectory.dir(".swift-ci-home").asFile
+val localGradleHome = layout.projectDirectory.dir(".gradle").asFile
+val localKonanHome = layout.projectDirectory.dir(".konan-cache").asFile
+val localAndroidHome = layout.projectDirectory.dir(".android-home").asFile
+val localTmpDir = layout.projectDirectory.dir(".tmp-cache").asFile
+val localSwiftPmModuleCache = layout.projectDirectory.dir(".swiftpm-module-cache").asFile
+val localClangModuleCache = layout.projectDirectory.dir(".clang-module-cache").asFile
+val localSwiftBuildDir = layout.buildDirectory.dir("swift-test").get().asFile
+
+fun localSwiftCacheDirs(): List<File> =
+    listOf(
+        localSwiftHome,
+        localGradleHome,
+        localKonanHome,
+        localAndroidHome,
+        localTmpDir,
+        localSwiftPmModuleCache,
+        localClangModuleCache,
+    )
+
+fun localSwiftExportEnvironment(): Map<String, String> =
+    mapOf(
+        "HOME" to localSwiftHome.absolutePath,
+        "JAVA_TOOL_OPTIONS" to "-Duser.home=${localSwiftHome.absolutePath} -Djava.io.tmpdir=${localTmpDir.absolutePath}",
+        "GRADLE_USER_HOME" to localGradleHome.absolutePath,
+        "KONAN_DATA_DIR" to localKonanHome.absolutePath,
+        "ANDROID_USER_HOME" to localAndroidHome.absolutePath,
+        "TMPDIR" to "${localTmpDir.absolutePath}${File.separator}",
+        "SWIFTPM_MODULECACHE_OVERRIDE" to localSwiftPmModuleCache.absolutePath,
+        "CLANG_MODULE_CACHE_PATH" to localClangModuleCache.absolutePath,
+        "BUILT_PRODUCTS_DIR" to localSwiftBuildDir.absolutePath,
+        "TARGET_BUILD_DIR" to localSwiftBuildDir.absolutePath,
+        "SDK_NAME" to "macosx",
+        "CONFIGURATION" to "Debug",
+        "ARCHS" to "arm64",
+        "FRAMEWORKS_FOLDER_PATH" to "Frameworks",
+        "MACOSX_DEPLOYMENT_TARGET" to "14.0",
+        "DEPLOYMENT_TARGET_SETTING_NAME" to "MACOSX_DEPLOYMENT_TARGET",
+    )
+
+fun localSwiftTestEnvironment(): Map<String, String> =
+    mapOf(
+        "HOME" to localSwiftHome.absolutePath,
+        "KONAN_DATA_DIR" to localKonanHome.absolutePath,
+        "TMPDIR" to "${localTmpDir.absolutePath}${File.separator}",
+        "SWIFTPM_MODULECACHE_OVERRIDE" to localSwiftPmModuleCache.absolutePath,
+        "CLANG_MODULE_CACHE_PATH" to localClangModuleCache.absolutePath,
+    )
+
+val swiftExportForLocalTest = tasks.register("swiftExportForLocalTest") {
+    group = "verification"
+    description = "Builds the Swift Export SPM package using repo-local caches."
+    outputs.upToDateWhen { false }
+
+    doLast {
+        localSwiftCacheDirs().forEach { it.mkdirs() }
+        localSwiftBuildDir.mkdirs()
+        projectExecOperations.exec {
+            workingDir = layout.projectDirectory.asFile
+            environment(localSwiftExportEnvironment())
+            commandLine(
+                if (isWindowsHost) "gradlew.bat" else "./gradlew",
+                "embedSwiftExportForXcode",
+                "--rerun-tasks",
+                "--no-build-cache",
+                "--no-daemon",
+                "--console=plain",
+                "--no-configuration-cache",
+            )
+        }
+    }
+}
+
+val swiftExportTest = tasks.register("swiftExportTest") {
+    group = "verification"
+    description = "Runs swift test against the Kotlin Swift Export package."
+    dependsOn(swiftExportForLocalTest)
+    outputs.upToDateWhen { false }
+
+    doLast {
+        localSwiftCacheDirs().forEach { it.mkdirs() }
+        projectExecOperations.exec {
+            workingDir = layout.projectDirectory.dir("swift-test-harness").asFile
+            environment(localSwiftTestEnvironment())
+            commandLine("swift", "test")
+        }
+    }
+}
+
+tasks.named("test") {
+    dependsOn(swiftExportTest)
+}
+
+tasks.named("check") {
+    dependsOn("test")
 }
 
 val fullTargetBuildTasks = listOf(
