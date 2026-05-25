@@ -63,6 +63,12 @@ local.properties
 # the Xcode-style env vars) is already covered by `build/` above.
 .swiftpm/
 DerivedData/
+.swift-ci-home/
+.swiftpm-module-cache/
+.clang-module-cache/
+.konan-cache/
+.android-home/
+.tmp-cache/
 *.xcuserstate
 *.xcworkspace/xcuserdata/
 *.xcodeproj/xcuserdata/

@@ -112,7 +112,7 @@ use dns_lookup::{lookup_host, lookup_addr};
 
 ```kotlin
 dependencies {
-    implementation("io.github.kotlinmania:dns-lookup-kotlin:0.1.0")
+    implementation("io.github.kotlinmania:dns-lookup-kotlin:0.1.1")
 }
 ```
 

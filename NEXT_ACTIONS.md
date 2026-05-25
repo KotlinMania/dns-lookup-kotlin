@@ -4,14 +4,14 @@ Based on AST analysis, here are the concrete next steps.
 
 ## Summary
 
-- **Files Present:** 2/8 (25.0%)
-- **Function parity:** 2/27 matched (target 24) — 7.4%
-- **Class/type parity:** 6/13 matched (target 9) — 46.2%
-- **Combined symbol parity:** 8/40 matched (target 33) — 20.0%
-- **Average inline-code cosine:** 0.14 (function body across 2 matched files)
-- **Average documentation cosine:** 0.76 (doc text across 2 matched files)
+- **Files Present:** 8/8 (100.0%)
+- **Function parity:** 22/27 matched (target 45) — 81.5%
+- **Class/type parity:** 9/13 matched (target 17) — 69.2%
+- **Combined symbol parity:** 31/40 matched (target 62) — 77.5%
+- **Average inline-code cosine:** 0.46 (function body across 8 matched files)
+- **Average documentation cosine:** 0.68 (doc text across 8 matched files)
 - **Cheat-zeroed Files:** 0
-- **Critical Issues:** 2 files with <0.60 function similarity
+- **Critical Issues:** 6 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
 
@@ -27,18 +27,30 @@ No missing high-value files detected.
 
 Every matched file is listed below with function and type symbol parity.
 
-### 1. err
+### 1. addrinfo
+
+- **Target:** `dnslookup.Addrinfo`
+- **Similarity:** 0.36
+- **Dependents:** 0
+- **Priority Score:** 51306.4
+- **Functions:** 5/8 matched (target 6)
+- **Missing functions:** `as_addrinfo`, `from_ptr`, `drop`
+- **Types:** 3/5 matched (target 4)
+- **Missing types:** `libc_c_char`, `Item`
+- **Tests:** 1/1 matched
+
+### 2. err
 
 - **Target:** `dnslookup.Err`
-- **Similarity:** 0.07
+- **Similarity:** 0.28
 - **Dependents:** 0
-- **Priority Score:** 50809.3
-- **Functions:** 1/6 matched (target 12)
-- **Missing functions:** `new`, `kind`, `error_num`, `from`, `gai_err_to_io_err`
+- **Priority Score:** 10807.2
+- **Functions:** 5/6 matched (target 16)
+- **Missing functions:** `gai_err_to_io_err`
 - **Types:** 2/2 matched (target 4)
 - **Missing types:** _none_
 
-### 2. types
+### 3. types
 
 - **Target:** `dnslookup.Types`
 - **Similarity:** 0.20
@@ -49,6 +61,64 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 4/4 matched (target 5)
 - **Missing types:** _none_
 
+### 4. hostname
+
+- **Target:** `dnslookup.Hostname`
+- **Similarity:** 0.40
+- **Dependents:** 0
+- **Priority Score:** 10306.0
+- **Functions:** 2/2 matched
+- **Missing functions:** _none_
+- **Types:** 0/1 matched
+- **Missing types:** `libc_c_char`
+- **Tests:** 1/1 matched
+
+### 5. nameinfo
+
+- **Target:** `dnslookup.Nameinfo`
+- **Similarity:** 0.56
+- **Dependents:** 0
+- **Priority Score:** 10304.4
+- **Functions:** 2/2 matched
+- **Missing functions:** _none_
+- **Types:** 0/1 matched
+- **Missing types:** `libc_c_char`
+- **Tests:** 1/1 matched
+
+### 6. lookup
+
+- **Target:** `dnslookup.Lookup`
+- **Similarity:** 0.62
+- **Dependents:** 0
+- **Priority Score:** 603.8
+- **Functions:** 6/6 matched
+- **Missing functions:** _none_
+- **Types:** 0/0 matched (target 1)
+- **Missing types:** _none_
+- **Tests:** 3/3 matched
+
+### 7. win
+
+- **Target:** `dnslookup.Win`
+- **Similarity:** 0.25
+- **Dependents:** 0
+- **Priority Score:** 107.5
+- **Functions:** 1/1 matched
+- **Missing functions:** _none_
+- **Types:** 0/0 matched
+- **Missing types:** _none_
+
+### 8. lib
+
+- **Target:** `dnslookup.Lib`
+- **Similarity:** 1.00
+- **Dependents:** 0
+- **Priority Score:** 0.0
+- **Functions:** 0/0 matched
+- **Missing functions:** _none_
+- **Types:** 0/0 matched (target 1)
+- **Missing types:** _none_
+
 ## Success Criteria
 
 For each file to be considered "complete":
@@ -57,17 +127,4 @@ For each file to be considered "complete":
 - All tests ported
 - Documentation ported
 - port-lint header present
-
-## Reexport / Wiring Modules
-
-These files match `reexport_modules` patterns in `.ast_distance_config.json`. They are filtered out of
-normal priority and missing-file ladders because they are wiring
-modules, not direct logic ports. Consult them for call-site routing;
-do not treat them as the next implementation target by default.
-
-### Missing
-
-| Source | Expected target | Deps | Source path | Expected path |
-|--------|-----------------|------|-------------|---------------|
-| `lib` | `Lib` | 0 | `lib.rs` | `Lib.kt` |
 

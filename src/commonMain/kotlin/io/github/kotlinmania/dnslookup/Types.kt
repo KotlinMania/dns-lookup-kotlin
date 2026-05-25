@@ -1,5 +1,9 @@
 // port-lint: source types.rs
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
+
 package io.github.kotlinmania.dnslookup
+
+import kotlin.native.HiddenFromObjC
 
 /** Parameters of address information structures are 32-bit signed integers on every supported target. */
 typealias CInt = Int
@@ -47,6 +51,7 @@ fun CInt.matches(sock: SockType): Boolean = this == sock.toCInt()
  * Cross platform enum of common Socket Protocols. For missing types use
  * the platform's libc / winsock protocol constants directly.
  */
+@HiddenFromObjC
 enum class Protocol {
     /** Internet Control Message Protocol. */
     ICMP,
@@ -73,6 +78,7 @@ enum class Protocol {
 }
 
 /** Return whether this platform integer value represents [sock]. */
+@HiddenFromObjC
 fun CInt.matches(sock: Protocol): Boolean = this == sock.toCInt()
 
 /**

@@ -1,5 +1,9 @@
 // port-lint: source err.rs
+@file:OptIn(kotlin.experimental.ExperimentalObjCRefinement::class)
+
 package io.github.kotlinmania.dnslookup
+
+import kotlin.native.HiddenFromObjC
 
 /**
  * Stores a lookup error from `getaddrinfo` or `getnameinfo`. The upstream
@@ -8,6 +12,7 @@ package io.github.kotlinmania.dnslookup
  * message and cause are surfaced through the standard
  * [Throwable] API.
  */
+@HiddenFromObjC
 class LookupError internal constructor(
     val kind: LookupErrorKind,
     val errorNum: Int,
@@ -36,6 +41,12 @@ class LookupError internal constructor(
         )
 
         /**
+         * Create a new [LookupError] from a `gai` error, returned by
+         * `getaddrinfo` and `getnameinfo`.
+         */
+        fun new(err: Int): LookupError = of(err)
+
+        /**
          * Build a [LookupError] from an existing IO-shaped throwable. The
          * resulting error has [kind] of [LookupErrorKind.IO] and
          * [errorNum] of `0`. This is the Kotlin analogue of upstream's
@@ -46,7 +57,21 @@ class LookupError internal constructor(
             errorNum = 0,
             inner = err,
         )
+
+        /**
+         * Build a [LookupError] from an existing IO-shaped throwable.
+         */
+        fun from(err: Throwable): LookupError = fromIoError(err)
     }
+
+    /** Get the error kind explicitly. */
+    fun kind(): LookupErrorKind = kind
+
+    /**
+     * Get the actual error number. This can be used to find non-standard
+     * return codes from some implementations; be careful of portability here.
+     */
+    fun errorNum(): Int = errorNum
 }
 
 /**
