@@ -54,7 +54,7 @@ internal actual object DnsLookupPlatform {
                             address = item.ai_family,
                             socktype = item.ai_socktype,
                             protocol = item.ai_protocol,
-                            sockaddr = socketAddressFrom(item.ai_addr, item.ai_addrlen.convert()),
+                            sockaddr = socketAddressFrom(item.ai_addr, item.ai_addrlen.toInt()),
                             canonname = item.ai_canonname?.toKString(),
                         )
                         current = item.ai_next
@@ -82,7 +82,7 @@ internal actual object DnsLookupPlatform {
                 LookupError.matchGaiError(code).getOrThrow()
                 val head = result.value ?: throw LookupError.of(ErrSys.EAI_NONAME)
                 try {
-                    getNameInfoFrom(head.pointed.ai_addr, head.pointed.ai_addrlen.convert(), flags)
+                    getNameInfoFrom(head.pointed.ai_addr, head.pointed.ai_addrlen.toInt(), flags)
                 } finally {
                     freeaddrinfo(head)
                 }
@@ -120,12 +120,12 @@ private fun kotlinx.cinterop.MemScope.allocAddrInfoHints(hints: AddrInfoHints): 
         ai_next = null
     }
 
-private fun socketAddressFrom(address: CPointer<sockaddr>?, length: UInt): SocketAddr {
+private fun socketAddressFrom(address: CPointer<sockaddr>?, length: Int): SocketAddr {
     val (host, service) = getNameInfoFrom(address, length, NI_NUMERICHOST or platform.posix.NI_NUMERICSERV)
     return SocketAddr(IpAddr.parse(host), service.toIntOrNull() ?: 0)
 }
 
-private fun getNameInfoFrom(address: CPointer<sockaddr>?, length: UInt, flags: Int): Pair<String, String> {
+private fun getNameInfoFrom(address: CPointer<sockaddr>?, length: Int, flags: Int): Pair<String, String> {
     if (address == null) {
         throw LookupError.fromIoError(IllegalArgumentException("Supplied socket address is null"))
     }
