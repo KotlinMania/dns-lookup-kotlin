@@ -114,7 +114,7 @@ private fun kotlinx.cinterop.MemScope.allocAddrInfoHints(hints: AddrInfoHints): 
         ai_family = hints.address
         ai_socktype = hints.socktype
         ai_protocol = hints.protocol
-        ai_addrlen = 0u
+        ai_addrlen = 0.convert()
         ai_addr = null
         ai_canonname = null
         ai_next = null
@@ -135,7 +135,7 @@ private fun getNameInfoFrom(address: CPointer<sockaddr>?, length: UInt, flags: I
         service.usePinned { servicePinned ->
             val code = cGetNameInfo(
                 address,
-                length,
+                length.convert(),
                 hostPinned.addressOf(0),
                 host.size.convert(),
                 servicePinned.addressOf(0),
