@@ -37,8 +37,9 @@ internal fun servicePort(service: String?): Int =
         "https" -> 443
         "domain" -> 53
         "dns" -> 53
-        else -> service.toIntOrNull()
-            ?: throw LookupError.fromIoError(IllegalArgumentException("Unknown network service: $service"))
+        else ->
+            service.toIntOrNull()
+                ?: throw LookupError.fromIoError(IllegalArgumentException("Unknown network service: $service"))
     }
 
 internal fun serviceName(port: Int): String =

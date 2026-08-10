@@ -17,21 +17,25 @@ typealias CInt = Int
 enum class SockType {
     /** Sequenced, reliable, connection-based byte streams. */
     Stream,
+
     /** Connectionless, unreliable datagrams of fixed max length. */
     DGram,
+
     /** Raw protocol interface. */
     Raw,
+
     /** Reliably-delivered messages. */
     RDM,
     ;
 
     /** Convert to the platform's libc / winsock socket-type integer. */
-    fun toCInt(): CInt = when (this) {
-        Stream -> Sys.SOCK_STREAM
-        DGram -> Sys.SOCK_DGRAM
-        Raw -> Sys.SOCK_RAW
-        RDM -> Sys.SOCK_RDM
-    }
+    fun toCInt(): CInt =
+        when (this) {
+            Stream -> Sys.SOCK_STREAM
+            DGram -> Sys.SOCK_DGRAM
+            Raw -> Sys.SOCK_RAW
+            RDM -> Sys.SOCK_RDM
+        }
 
     /** Return whether this socket type has the supplied platform integer value. */
     fun matches(other: CInt): Boolean = other == toCInt()
@@ -55,18 +59,21 @@ fun CInt.matches(sock: SockType): Boolean = this == sock.toCInt()
 enum class Protocol {
     /** Internet Control Message Protocol. */
     ICMP,
+
     /** Transmission Control Protocol. */
     TCP,
+
     /** User Datagram Protocol. */
     UDP,
     ;
 
     /** Convert to the platform's libc / winsock protocol integer. */
-    fun toCInt(): CInt = when (this) {
-        ICMP -> Sys.IPPROTO_ICMP
-        TCP -> Sys.IPPROTO_TCP
-        UDP -> Sys.IPPROTO_UDP
-    }
+    fun toCInt(): CInt =
+        when (this) {
+            ICMP -> Sys.IPPROTO_ICMP
+            TCP -> Sys.IPPROTO_TCP
+            UDP -> Sys.IPPROTO_UDP
+        }
 
     /** Return whether this protocol has the supplied platform integer value. */
     fun matches(other: CInt): Boolean = other == toCInt()
@@ -90,18 +97,21 @@ fun CInt.matches(sock: Protocol): Boolean = this == sock.toCInt()
 enum class AddrFamily {
     /** Local to host (pipes and file-domain) */
     Unix,
+
     /** IP protocol family. */
     Inet,
+
     /** IP version 6. */
     Inet6,
     ;
 
     /** Convert to the platform's libc / winsock address-family integer. */
-    fun toCInt(): CInt = when (this) {
-        Unix -> Sys.AF_UNIX
-        Inet -> Sys.AF_INET
-        Inet6 -> Sys.AF_INET6
-    }
+    fun toCInt(): CInt =
+        when (this) {
+            Unix -> Sys.AF_UNIX
+            Inet -> Sys.AF_INET
+            Inet6 -> Sys.AF_INET6
+        }
 
     /** Return whether this address family has the supplied platform integer value. */
     fun matches(other: CInt): Boolean = other == toCInt()

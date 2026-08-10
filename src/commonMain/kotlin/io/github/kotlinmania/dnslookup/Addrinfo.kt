@@ -56,12 +56,13 @@ data class AddrInfoHints(
             address: AddrFamily? = null,
             socktype: SockType? = null,
             protocol: Protocol? = null,
-        ): AddrInfoHints = AddrInfoHints(
-            flags = flags ?: 0,
-            address = address?.toCInt() ?: 0,
-            socktype = socktype?.toCInt() ?: 0,
-            protocol = protocol?.toCInt() ?: 0,
-        )
+        ): AddrInfoHints =
+            AddrInfoHints(
+                flags = flags ?: 0,
+                address = address?.toCInt() ?: 0,
+                socktype = socktype?.toCInt() ?: 0,
+                protocol = protocol?.toCInt() ?: 0,
+            )
     }
 }
 
@@ -147,6 +148,7 @@ fun getaddrinfo(
     }
 
     initWinsock()
-    return DnsLookupPlatform.getAddrInfo(host, service, hints ?: AddrInfoHints())
+    return DnsLookupPlatform
+        .getAddrInfo(host, service, hints ?: AddrInfoHints())
         .map { entries -> AddrInfoIter(entries.map { Result.success(it) }) }
 }

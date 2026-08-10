@@ -1,6 +1,7 @@
 @file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
 
 // port-lint: ignore - Apple actual for the common lookup platform bridge.
+
 package io.github.kotlinmania.dnslookup
 
 import kotlinx.cinterop.CPointer
@@ -19,8 +20,9 @@ import platform.posix.NI_NUMERICHOST
 import platform.posix.NI_NUMERICSERV
 import platform.posix.addrinfo
 import platform.posix.freeaddrinfo
-import platform.posix.gethostname
 import platform.posix.sockaddr
+import platform.posix.uname
+import platform.posix.utsname
 import platform.posix.getaddrinfo as cGetAddrInfo
 import platform.posix.getnameinfo as cGetNameInfo
 
@@ -36,12 +38,13 @@ internal actual object DnsLookupPlatform {
             memScoped {
                 val cHints = allocAddrInfoHints(hints)
                 val result = allocPointerTo<addrinfo>()
-                val code = cGetAddrInfo(
-                    host,
-                    service,
-                    cHints.ptr,
-                    result.ptr,
-                )
+                val code =
+                    cGetAddrInfo(
+                        host,
+                        service,
+                        cHints.ptr,
+                        result.ptr,
+                    )
                 LookupError.matchGaiError(code).getOrThrow()
                 val head = result.value
                 try {
@@ -49,14 +52,15 @@ internal actual object DnsLookupPlatform {
                     var current = head
                     while (current != null) {
                         val item = current.pointed
-                        entries += AddrInfo(
-                            flags = 0,
-                            address = item.ai_family,
-                            socktype = item.ai_socktype,
-                            protocol = item.ai_protocol,
-                            sockaddr = socketAddressFrom(item.ai_addr, item.ai_addrlen.convert()),
-                            canonname = item.ai_canonname?.toKString(),
-                        )
+                        entries +=
+                            AddrInfo(
+                                flags = 0,
+                                address = item.ai_family,
+                                socktype = item.ai_socktype,
+                                protocol = item.ai_protocol,
+                                sockaddr = socketAddressFrom(item.ai_addr, item.ai_addrlen.convert()),
+                                canonname = item.ai_canonname?.toKString(),
+                            )
                         current = item.ai_next
                     }
                     entries
@@ -73,12 +77,13 @@ internal actual object DnsLookupPlatform {
             memScoped {
                 val hints = allocAddrInfoHints(AddrInfoHints(address = sock.ip.addressFamily()))
                 val result = allocPointerTo<addrinfo>()
-                val code = cGetAddrInfo(
-                    sock.ip.address,
-                    sock.port.toString(),
-                    hints.ptr,
-                    result.ptr,
-                )
+                val code =
+                    cGetAddrInfo(
+                        sock.ip.address,
+                        sock.port.toString(),
+                        hints.ptr,
+                        result.ptr,
+                    )
                 LookupError.matchGaiError(code).getOrThrow()
                 val head = result.value ?: throw LookupError.of(ErrSys.EAI_NONAME)
                 try {
@@ -91,13 +96,13 @@ internal actual object DnsLookupPlatform {
 
     actual fun getHostname(): Result<String> =
         dnsLookupResult {
-            val buffer = ByteArray(256)
-            buffer.usePinned { pinned ->
-                val code = gethostname(pinned.addressOf(0), buffer.size.convert())
+            memScoped {
+                val info = alloc<utsname>()
+                val code = uname(info.ptr)
                 if (code != 0) {
                     throw ErrSys.lastOsError()
                 }
-                pinned.addressOf(0).toKString()
+                info.nodename.toKString()
             }
         }
 
@@ -133,15 +138,16 @@ private fun getNameInfoFrom(address: CPointer<sockaddr>?, length: UInt, flags: I
     val service = ByteArray(32)
     host.usePinned { hostPinned ->
         service.usePinned { servicePinned ->
-            val code = cGetNameInfo(
-                address,
-                length.convert(),
-                hostPinned.addressOf(0),
-                host.size.convert(),
-                servicePinned.addressOf(0),
-                service.size.convert(),
-                flags,
-            )
+            val code =
+                cGetNameInfo(
+                    address,
+                    length.convert(),
+                    hostPinned.addressOf(0),
+                    host.size.convert(),
+                    servicePinned.addressOf(0),
+                    service.size.convert(),
+                    flags,
+                )
             LookupError.matchGaiError(code).getOrThrow()
             return hostPinned.addressOf(0).toKString() to servicePinned.addressOf(0).toKString()
         }
