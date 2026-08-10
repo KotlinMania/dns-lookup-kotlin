@@ -9,7 +9,6 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class ErrTest {
-
     @Test
     fun matchGaiErrorTreatsZeroAsSuccess() {
         val r = LookupError.matchGaiError(0)

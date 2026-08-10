@@ -18,27 +18,28 @@ class LookupError internal constructor(
     val errorNum: Int,
     inner: Throwable,
 ) : Exception(inner.message, inner) {
-
     companion object {
         /**
          * Match a `gai` error, returning a success [Result] if it is `0`.
          * Otherwise return a failure containing a [LookupError] with the
          * specific error details.
          */
-        fun matchGaiError(err: Int): Result<Unit> = when (err) {
-            0 -> Result.success(Unit)
-            else -> Result.failure(of(err))
-        }
+        fun matchGaiError(err: Int): Result<Unit> =
+            when (err) {
+                0 -> Result.success(Unit)
+                else -> Result.failure(of(err))
+            }
 
         /**
          * Create a new [LookupError] from a `gai` error, returned by
          * `getaddrinfo` and `getnameinfo`.
          */
-        fun of(err: Int): LookupError = LookupError(
-            kind = LookupErrorKind.fromGaiErr(err),
-            errorNum = err,
-            inner = gaiErrToIoError(err),
-        )
+        fun of(err: Int): LookupError =
+            LookupError(
+                kind = LookupErrorKind.fromGaiErr(err),
+                errorNum = err,
+                inner = gaiErrToIoError(err),
+            )
 
         /**
          * Create a new [LookupError] from a `gai` error, returned by
@@ -52,11 +53,12 @@ class LookupError internal constructor(
          * [errorNum] of `0`. This is the Kotlin analogue of upstream's
          * IO-error conversion.
          */
-        fun fromIoError(err: Throwable): LookupError = LookupError(
-            kind = LookupErrorKind.IO,
-            errorNum = 0,
-            inner = err,
-        )
+        fun fromIoError(err: Throwable): LookupError =
+            LookupError(
+                kind = LookupErrorKind.IO,
+                errorNum = 0,
+                inner = err,
+            )
 
         /**
          * Build a [LookupError] from an existing IO-shaped throwable.
@@ -155,19 +157,20 @@ enum class LookupErrorKind {
          * upstream platform gates around no-data and system-error symbols
          * without conditional compilation.
          */
-        fun fromGaiErr(err: Int): LookupErrorKind = when (err) {
-            ErrSys.EAI_AGAIN -> Again
-            ErrSys.EAI_BADFLAGS -> Badflags
-            ErrSys.EAI_FAIL -> Fail
-            ErrSys.EAI_FAMILY -> Family
-            ErrSys.EAI_MEMORY -> Memory
-            ErrSys.EAI_NONAME -> NoName
-            ErrSys.EAI_NODATA -> NoData
-            ErrSys.EAI_SERVICE -> Service
-            ErrSys.EAI_SOCKTYPE -> Socktype
-            ErrSys.EAI_SYSTEM -> System
-            else -> IO
-        }
+        fun fromGaiErr(err: Int): LookupErrorKind =
+            when (err) {
+                ErrSys.EAI_AGAIN -> Again
+                ErrSys.EAI_BADFLAGS -> Badflags
+                ErrSys.EAI_FAIL -> Fail
+                ErrSys.EAI_FAMILY -> Family
+                ErrSys.EAI_MEMORY -> Memory
+                ErrSys.EAI_NONAME -> NoName
+                ErrSys.EAI_NODATA -> NoData
+                ErrSys.EAI_SERVICE -> Service
+                ErrSys.EAI_SOCKTYPE -> Socktype
+                ErrSys.EAI_SYSTEM -> System
+                else -> IO
+            }
     }
 }
 
@@ -175,11 +178,12 @@ enum class LookupErrorKind {
  * Given a `gai` error, return a [Throwable] with the appropriate error
  * message. Note `0` is not an error, but will still map to an error.
  */
-internal fun gaiErrToIoError(err: Int): Throwable = when (err) {
-    0 -> Exception("address information lookup success")
-    ErrSys.EAI_SYSTEM -> ErrSys.lastOsError()
-    else -> Exception("failed to lookup address information: ${ErrSys.gaiStrError(err)}")
-}
+internal fun gaiErrToIoError(err: Int): Throwable =
+    when (err) {
+        0 -> Exception("address information lookup success")
+        ErrSys.EAI_SYSTEM -> ErrSys.lastOsError()
+        else -> Exception("failed to lookup address information: ${ErrSys.gaiStrError(err)}")
+    }
 
 /**
  * Platform-specific `gai` error code surface. Each target supplies the

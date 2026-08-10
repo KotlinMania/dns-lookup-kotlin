@@ -12,21 +12,24 @@ import kotlin.native.HiddenFromObjC
  */
 @HiddenFromObjC
 fun lookupHost(host: String): Result<Iterator<IpAddr>> {
-    val hints = AddrInfoHints(
-        socktype = SockType.Stream.toCInt(),
-    )
+    val hints =
+        AddrInfoHints(
+            socktype = SockType.Stream.toCInt(),
+        )
 
-    val addrs = getaddrinfo(host, null, hints).getOrElse { err ->
-        reloadDnsNameserver()
-        return Result.failure(err)
-    }
-
-    val ips = mutableListOf<IpAddr>()
-    while (addrs.hasNext()) {
-        val addr = addrs.next().getOrElse { err ->
+    val addrs =
+        getaddrinfo(host, null, hints).getOrElse { err ->
             reloadDnsNameserver()
             return Result.failure(err)
         }
+
+    val ips = mutableListOf<IpAddr>()
+    while (addrs.hasNext()) {
+        val addr =
+            addrs.next().getOrElse { err ->
+                reloadDnsNameserver()
+                return Result.failure(err)
+            }
         ips += addr.sockaddr.ip
     }
     return Result.success(ips.iterator())
