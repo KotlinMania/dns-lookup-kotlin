@@ -60,7 +60,8 @@ data class SocketAddr(
 
 private fun String.isIpv4Address(): Boolean {
     val parts = split('.')
-    return parts.size == 4 && parts.all { part ->
-        part.isNotEmpty() && part.all(Char::isDigit) && part.toIntOrNull() in 0..255
-    }
+    return parts.size == 4 &&
+        parts.all { part ->
+            part.isNotEmpty() && part.all(Char::isDigit) && part.toIntOrNull() in 0..255
+        }
 }
