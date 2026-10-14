@@ -4,6 +4,17 @@
 package io.github.kotlinmania.dnslookup
 
 import kotlin.native.HiddenFromObjC
+import io.github.kotlinmania.libc.unix.IPPROTO_ICMP as APPLE_IPPROTO_ICMP
+import io.github.kotlinmania.libc.unix.IPPROTO_TCP as APPLE_IPPROTO_TCP
+import io.github.kotlinmania.libc.unix.IPPROTO_UDP as APPLE_IPPROTO_UDP
+import io.github.kotlinmania.libc.unix.bsd.apple.AF_INET as APPLE_AF_INET
+import io.github.kotlinmania.libc.unix.bsd.apple.AF_INET6 as APPLE_AF_INET6
+import io.github.kotlinmania.libc.unix.bsd.apple.AF_UNIX as APPLE_AF_UNIX
+import io.github.kotlinmania.libc.unix.bsd.apple.SOCK_DGRAM as APPLE_SOCK_DGRAM
+import io.github.kotlinmania.libc.unix.bsd.apple.SOCK_RAW as APPLE_SOCK_RAW
+import io.github.kotlinmania.libc.unix.bsd.apple.SOCK_RDM as APPLE_SOCK_RDM
+import io.github.kotlinmania.libc.unix.bsd.apple.SOCK_STREAM as APPLE_SOCK_STREAM
+import io.github.kotlinmania.libc.unix.linuxlike.AF_INET6 as LINUX_AF_INET6
 
 /** Parameters of address information structures are 32-bit signed integers on every supported target. */
 typealias CInt = Int
@@ -125,15 +136,21 @@ enum class AddrFamily {
 /** Return whether this platform integer value represents [sock]. */
 fun CInt.matches(sock: AddrFamily): Boolean = this == sock.toCInt()
 
-internal expect object Sys {
-    val SOCK_STREAM: CInt
-    val SOCK_DGRAM: CInt
-    val SOCK_RAW: CInt
-    val SOCK_RDM: CInt
-    val IPPROTO_ICMP: CInt
-    val IPPROTO_TCP: CInt
-    val IPPROTO_UDP: CInt
-    val AF_UNIX: CInt
-    val AF_INET: CInt
+internal object Sys {
+    val SOCK_STREAM: CInt = APPLE_SOCK_STREAM
+    val SOCK_DGRAM: CInt = APPLE_SOCK_DGRAM
+    val SOCK_RAW: CInt = APPLE_SOCK_RAW
+    val SOCK_RDM: CInt = APPLE_SOCK_RDM
+    val IPPROTO_ICMP: CInt = APPLE_IPPROTO_ICMP
+    val IPPROTO_TCP: CInt = APPLE_IPPROTO_TCP
+    val IPPROTO_UDP: CInt = APPLE_IPPROTO_UDP
+    val AF_UNIX: CInt = APPLE_AF_UNIX
+    val AF_INET: CInt = APPLE_AF_INET
     val AF_INET6: CInt
+        get() =
+            when (DnsLookupPlatform.osKind) {
+                OsKind.DARWIN -> APPLE_AF_INET6
+                OsKind.WINDOWS -> 23
+                else -> LINUX_AF_INET6
+            }
 }

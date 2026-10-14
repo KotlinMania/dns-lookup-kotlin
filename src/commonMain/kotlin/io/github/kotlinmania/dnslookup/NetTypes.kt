@@ -1,4 +1,4 @@
-// port-lint: ignore - Kotlin value types backing the upstream standard-library network values.
+// port-lint: source lib.rs
 package io.github.kotlinmania.dnslookup
 
 /**
