@@ -3,18 +3,18 @@
 
 package io.github.kotlinmania.dnslookup
 
+import kotlin.native.HiddenFromObjC
+import io.github.kotlinmania.libc.unix.IPPROTO_ICMP as APPLE_IPPROTO_ICMP
+import io.github.kotlinmania.libc.unix.IPPROTO_TCP as APPLE_IPPROTO_TCP
+import io.github.kotlinmania.libc.unix.IPPROTO_UDP as APPLE_IPPROTO_UDP
 import io.github.kotlinmania.libc.unix.bsd.apple.AF_INET as APPLE_AF_INET
 import io.github.kotlinmania.libc.unix.bsd.apple.AF_INET6 as APPLE_AF_INET6
 import io.github.kotlinmania.libc.unix.bsd.apple.AF_UNIX as APPLE_AF_UNIX
-import io.github.kotlinmania.libc.unix.bsd.apple.IPPROTO_ICMP as APPLE_IPPROTO_ICMP
-import io.github.kotlinmania.libc.unix.bsd.apple.IPPROTO_TCP as APPLE_IPPROTO_TCP
-import io.github.kotlinmania.libc.unix.bsd.apple.IPPROTO_UDP as APPLE_IPPROTO_UDP
 import io.github.kotlinmania.libc.unix.bsd.apple.SOCK_DGRAM as APPLE_SOCK_DGRAM
 import io.github.kotlinmania.libc.unix.bsd.apple.SOCK_RAW as APPLE_SOCK_RAW
 import io.github.kotlinmania.libc.unix.bsd.apple.SOCK_RDM as APPLE_SOCK_RDM
 import io.github.kotlinmania.libc.unix.bsd.apple.SOCK_STREAM as APPLE_SOCK_STREAM
 import io.github.kotlinmania.libc.unix.linuxlike.AF_INET6 as LINUX_AF_INET6
-import kotlin.native.HiddenFromObjC
 
 /** Parameters of address information structures are 32-bit signed integers on every supported target. */
 typealias CInt = Int

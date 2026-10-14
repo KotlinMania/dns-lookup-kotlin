@@ -3,6 +3,8 @@
 
 package io.github.kotlinmania.dnslookup
 
+import io.github.kotlinmania.libc.unix.gaiStrerror
+import kotlin.native.HiddenFromObjC
 import io.github.kotlinmania.libc.unix.bsd.apple.EAI_AGAIN as APPLE_EAI_AGAIN
 import io.github.kotlinmania.libc.unix.bsd.apple.EAI_BADFLAGS as APPLE_EAI_BADFLAGS
 import io.github.kotlinmania.libc.unix.bsd.apple.EAI_FAIL as APPLE_EAI_FAIL
@@ -13,7 +15,6 @@ import io.github.kotlinmania.libc.unix.bsd.apple.EAI_NONAME as APPLE_EAI_NONAME
 import io.github.kotlinmania.libc.unix.bsd.apple.EAI_SERVICE as APPLE_EAI_SERVICE
 import io.github.kotlinmania.libc.unix.bsd.apple.EAI_SOCKTYPE as APPLE_EAI_SOCKTYPE
 import io.github.kotlinmania.libc.unix.bsd.apple.EAI_SYSTEM as APPLE_EAI_SYSTEM
-import io.github.kotlinmania.libc.unix.gaiStrerror
 import io.github.kotlinmania.libc.unix.linuxlike.EAI_AGAIN as LINUX_EAI_AGAIN
 import io.github.kotlinmania.libc.unix.linuxlike.EAI_BADFLAGS as LINUX_EAI_BADFLAGS
 import io.github.kotlinmania.libc.unix.linuxlike.EAI_FAIL as LINUX_EAI_FAIL
@@ -24,7 +25,6 @@ import io.github.kotlinmania.libc.unix.linuxlike.EAI_NONAME as LINUX_EAI_NONAME
 import io.github.kotlinmania.libc.unix.linuxlike.EAI_SERVICE as LINUX_EAI_SERVICE
 import io.github.kotlinmania.libc.unix.linuxlike.EAI_SOCKTYPE as LINUX_EAI_SOCKTYPE
 import io.github.kotlinmania.libc.unix.linuxlike.EAI_SYSTEM as LINUX_EAI_SYSTEM
-import kotlin.native.HiddenFromObjC
 
 /**
  * Stores a lookup error from `getaddrinfo` or `getnameinfo`. The upstream

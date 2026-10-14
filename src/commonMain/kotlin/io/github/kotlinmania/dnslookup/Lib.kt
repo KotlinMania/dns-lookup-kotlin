@@ -7,18 +7,18 @@ import io.github.kotlinmania.libc.Sockaddr
 import io.github.kotlinmania.libc.Utsname
 import io.github.kotlinmania.libc.toAddrinfo
 import io.github.kotlinmania.libc.toSockaddr
+import io.github.kotlinmania.libc.unix.bsd.apple.uname
+import io.github.kotlinmania.libc.unix.freeaddrinfo
+import io.github.kotlinmania.libc.unix.getenv
+import io.github.kotlinmania.libc.unix.resInit
 import io.github.kotlinmania.libc.unix.bsd.apple.NI_NAMEREQD as APPLE_NI_NAMEREQD
 import io.github.kotlinmania.libc.unix.bsd.apple.NI_NUMERICHOST as APPLE_NI_NUMERICHOST
 import io.github.kotlinmania.libc.unix.bsd.apple.NI_NUMERICSERV as APPLE_NI_NUMERICSERV
-import io.github.kotlinmania.libc.unix.bsd.apple.getenv
-import io.github.kotlinmania.libc.unix.bsd.apple.uname
-import io.github.kotlinmania.libc.unix.freeaddrinfo
+import io.github.kotlinmania.libc.unix.getaddrinfo as cGetAddrInfo
+import io.github.kotlinmania.libc.unix.getnameinfo as cGetNameInfo
 import io.github.kotlinmania.libc.unix.linuxlike.NI_NAMEREQD as LINUX_NI_NAMEREQD
 import io.github.kotlinmania.libc.unix.linuxlike.NI_NUMERICHOST as LINUX_NI_NUMERICHOST
 import io.github.kotlinmania.libc.unix.linuxlike.NI_NUMERICSERV as LINUX_NI_NUMERICSERV
-import io.github.kotlinmania.libc.unix.resInit
-import io.github.kotlinmania.libc.unix.getaddrinfo as cGetAddrInfo
-import io.github.kotlinmania.libc.unix.getnameinfo as cGetNameInfo
 
 /**
  * A small wrapper for libc to perform simple DNS lookups.
@@ -65,12 +65,7 @@ internal object DnsLookupPlatform {
                 sys.startsWith("Darwin", ignoreCase = true) -> OsKind.DARWIN
                 sys.startsWith("WASI", ignoreCase = true) -> OsKind.WASI
                 sys.startsWith("Windows", ignoreCase = true) -> OsKind.WINDOWS
-                sys.startsWith("Linux", ignoreCase = true) ->
-                    if (getenv("ANDROID_ROOT") != null) {
-                        OsKind.ANDROID
-                    } else {
-                        OsKind.LINUX
-                    }
+                sys.startsWith("Linux", ignoreCase = true) -> if (getenv("ANDROID_ROOT") != null) OsKind.ANDROID else OsKind.LINUX
                 else -> OsKind.LINUX
             }
         }
