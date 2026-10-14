@@ -112,7 +112,7 @@ use dns_lookup::{lookup_host, lookup_addr};
 
 ```kotlin
 dependencies {
-    implementation("io.github.kotlinmania:dns-lookup-kotlin:0.1.3")
+    implementation("io.github.kotlinmania:dns-lookup-kotlin:0.1.4")
 }
 ```
 
@@ -135,7 +135,7 @@ dependencies {
 
 ### Porting guidelines
 
-See [AGENTS.md](AGENTS.md) and [CLAUDE.md](CLAUDE.md) for translator discipline, port-lint header convention, and Rust → Kotlin idiom mapping.
+See [AGENTS.md](AGENTS.md) for translator discipline, port-lint header convention, and Rust → Kotlin idiom mapping.
 
 ### License
 

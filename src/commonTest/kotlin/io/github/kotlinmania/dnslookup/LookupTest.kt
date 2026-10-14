@@ -20,7 +20,7 @@ class LookupTest {
 
     @Test
     fun testRevLocalhost() {
-        if (!DnsLookupPlatform.supportsLookup) {
+        if (!DnsLookupPlatform.supportsLookup || DnsLookupPlatform.loopbackReverseLookupUsesHostname) {
             return
         }
 

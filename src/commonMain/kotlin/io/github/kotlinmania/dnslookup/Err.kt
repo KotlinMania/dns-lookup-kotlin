@@ -3,6 +3,27 @@
 
 package io.github.kotlinmania.dnslookup
 
+import io.github.kotlinmania.libc.unix.bsd.apple.EAI_AGAIN as APPLE_EAI_AGAIN
+import io.github.kotlinmania.libc.unix.bsd.apple.EAI_BADFLAGS as APPLE_EAI_BADFLAGS
+import io.github.kotlinmania.libc.unix.bsd.apple.EAI_FAIL as APPLE_EAI_FAIL
+import io.github.kotlinmania.libc.unix.bsd.apple.EAI_FAMILY as APPLE_EAI_FAMILY
+import io.github.kotlinmania.libc.unix.bsd.apple.EAI_MEMORY as APPLE_EAI_MEMORY
+import io.github.kotlinmania.libc.unix.bsd.apple.EAI_NODATA as APPLE_EAI_NODATA
+import io.github.kotlinmania.libc.unix.bsd.apple.EAI_NONAME as APPLE_EAI_NONAME
+import io.github.kotlinmania.libc.unix.bsd.apple.EAI_SERVICE as APPLE_EAI_SERVICE
+import io.github.kotlinmania.libc.unix.bsd.apple.EAI_SOCKTYPE as APPLE_EAI_SOCKTYPE
+import io.github.kotlinmania.libc.unix.bsd.apple.EAI_SYSTEM as APPLE_EAI_SYSTEM
+import io.github.kotlinmania.libc.unix.gaiStrerror
+import io.github.kotlinmania.libc.unix.linuxlike.EAI_AGAIN as LINUX_EAI_AGAIN
+import io.github.kotlinmania.libc.unix.linuxlike.EAI_BADFLAGS as LINUX_EAI_BADFLAGS
+import io.github.kotlinmania.libc.unix.linuxlike.EAI_FAIL as LINUX_EAI_FAIL
+import io.github.kotlinmania.libc.unix.linuxlike.EAI_FAMILY as LINUX_EAI_FAMILY
+import io.github.kotlinmania.libc.unix.linuxlike.EAI_MEMORY as LINUX_EAI_MEMORY
+import io.github.kotlinmania.libc.unix.linuxlike.EAI_NODATA as LINUX_EAI_NODATA
+import io.github.kotlinmania.libc.unix.linuxlike.EAI_NONAME as LINUX_EAI_NONAME
+import io.github.kotlinmania.libc.unix.linuxlike.EAI_SERVICE as LINUX_EAI_SERVICE
+import io.github.kotlinmania.libc.unix.linuxlike.EAI_SOCKTYPE as LINUX_EAI_SOCKTYPE
+import io.github.kotlinmania.libc.unix.linuxlike.EAI_SYSTEM as LINUX_EAI_SYSTEM
 import kotlin.native.HiddenFromObjC
 
 /**
@@ -185,44 +206,108 @@ internal fun gaiErrToIoError(err: Int): Throwable =
         else -> Exception("failed to lookup address information: ${ErrSys.gaiStrError(err)}")
     }
 
-/**
- * Platform-specific `gai` error code surface. Each target supplies the
- * numeric values from its libc or winsock headers, along with the local
- * equivalents of platform address-info error text and the last OS error.
- *
- * Platforms that lack a particular symbol expose [EAI_ABSENT] in its
- * place — a sentinel chosen so that real error codes never collide with
- * it, preserving the upstream platform gates around no-data and
- * system-error symbols without conditional compilation.
- */
-internal expect object ErrSys {
+internal object ErrSys {
     val EAI_AGAIN: Int
+        get() =
+            when (DnsLookupPlatform.osKind) {
+                OsKind.LINUX, OsKind.WASI -> LINUX_EAI_AGAIN
+                OsKind.WINDOWS -> 11002
+                else -> APPLE_EAI_AGAIN
+            }
+
     val EAI_BADFLAGS: Int
+        get() =
+            when (DnsLookupPlatform.osKind) {
+                OsKind.LINUX, OsKind.WASI -> LINUX_EAI_BADFLAGS
+                OsKind.WINDOWS -> 10022
+                else -> APPLE_EAI_BADFLAGS
+            }
+
     val EAI_FAIL: Int
+        get() =
+            when (DnsLookupPlatform.osKind) {
+                OsKind.LINUX, OsKind.WASI -> LINUX_EAI_FAIL
+                OsKind.WINDOWS -> 11003
+                else -> APPLE_EAI_FAIL
+            }
+
     val EAI_FAMILY: Int
+        get() =
+            when (DnsLookupPlatform.osKind) {
+                OsKind.LINUX, OsKind.WASI -> LINUX_EAI_FAMILY
+                OsKind.WINDOWS -> 10047
+                else -> APPLE_EAI_FAMILY
+            }
+
     val EAI_MEMORY: Int
+        get() =
+            when (DnsLookupPlatform.osKind) {
+                OsKind.LINUX, OsKind.WASI -> LINUX_EAI_MEMORY
+                OsKind.WINDOWS -> 8
+                else -> APPLE_EAI_MEMORY
+            }
+
     val EAI_NONAME: Int
+        get() =
+            when (DnsLookupPlatform.osKind) {
+                OsKind.LINUX, OsKind.WASI -> LINUX_EAI_NONAME
+                OsKind.WINDOWS -> 11001
+                else -> APPLE_EAI_NONAME
+            }
+
     val EAI_NODATA: Int
+        get() =
+            when (DnsLookupPlatform.osKind) {
+                OsKind.LINUX, OsKind.WASI -> LINUX_EAI_NODATA
+                OsKind.WINDOWS -> 11004
+                else -> APPLE_EAI_NODATA
+            }
+
     val EAI_SERVICE: Int
+        get() =
+            when (DnsLookupPlatform.osKind) {
+                OsKind.LINUX, OsKind.WASI -> LINUX_EAI_SERVICE
+                OsKind.WINDOWS -> 10109
+                else -> APPLE_EAI_SERVICE
+            }
+
     val EAI_SOCKTYPE: Int
+        get() =
+            when (DnsLookupPlatform.osKind) {
+                OsKind.LINUX, OsKind.WASI -> LINUX_EAI_SOCKTYPE
+                OsKind.WINDOWS -> 10044
+                else -> APPLE_EAI_SOCKTYPE
+            }
+
     val EAI_SYSTEM: Int
+        get() =
+            when (DnsLookupPlatform.osKind) {
+                OsKind.LINUX, OsKind.WASI -> LINUX_EAI_SYSTEM
+                OsKind.WINDOWS -> 10093
+                else -> APPLE_EAI_SYSTEM
+            }
 
-    /**
-     * Sentinel used by platforms that lack a particular `gai` error
-     * symbol. Set to a value that no real platform error code is known
-     * to take, so that `when` branches against it never fire for real
-     * input.
-     */
-    val EAI_ABSENT: Int
+    const val EAI_ABSENT: Int = Int.MIN_VALUE
 
-    /** Equivalent of libc / winsock address-info error text lookup. */
-    fun gaiStrError(err: Int): String
+    fun gaiStrError(err: Int): String {
+        val known =
+            when (err) {
+                EAI_AGAIN -> "Temporary failure in name resolution"
+                EAI_BADFLAGS -> "Invalid value for ai_flags"
+                EAI_FAIL -> "Non-recoverable failure in name resolution"
+                EAI_FAMILY -> "ai_family not supported"
+                EAI_MEMORY -> "Memory allocation failure"
+                EAI_NODATA -> "No address associated with nodename"
+                EAI_NONAME -> "nodename nor servname provided, or not known"
+                EAI_SERVICE -> "servname not supported for ai_socktype"
+                EAI_SOCKTYPE -> "ai_socktype not supported"
+                EAI_SYSTEM -> "System error"
+                else -> null
+            }
+        if (known != null) return known
+        val raw = gaiStrerror(err)
+        return if (!raw.isNullOrEmpty() && err in -100..15000) raw else "Unknown error: $err"
+    }
 
-    /**
-     * Equivalent of the platform's last OS error. Wraps the platform's
-     * current `errno` / `WSAGetLastError` value, where one is available;
-     * on Kotlin targets that do not expose an OS errno, this returns a
-     * generic IO-shaped throwable.
-     */
-    fun lastOsError(): Throwable
+    fun lastOsError(): Throwable = Exception("system error from getaddrinfo / getnameinfo")
 }

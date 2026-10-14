@@ -18,6 +18,10 @@ class NameinfoTest {
         val (name, service) = getnameinfo(socket, 0).getOrThrow()
 
         assertEquals("ssh", service)
-        assertEquals("localhost", name)
+        if (DnsLookupPlatform.loopbackReverseLookupUsesHostname) {
+            assertEquals(getHostname().getOrThrow(), name)
+        } else {
+            assertEquals("localhost", name)
+        }
     }
 }
